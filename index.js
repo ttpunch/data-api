@@ -19,10 +19,10 @@ app.use(bodyParser.json());
  
 
 //Submit form Data 
-app.use('https://data-api-d6lk.onrender.com/machinedata',bgroute)
-app.use('https://data-api-d6lk.onrender.com/submit-form',formroute)
-app.use('https://data-api-d6lk.onrender.com/machineroute',searchroute)
-app.use('https://data-api-d6lk.onrender.com/editdata/',editFormRoute)
+app.use('/machinedata',bgroute)
+app.use('/submit-form',formroute)
+app.use('/machineroute',searchroute)
+app.use('/editdata/',editFormRoute)
 //________________________________________________________________________________________________________________________________
 
 const dbconnect = async () => {
