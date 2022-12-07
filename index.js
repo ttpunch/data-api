@@ -19,10 +19,10 @@ app.use(bodyParser.json());
  
 
 //Submit form Data 
-app.use('https://github.com/ttpunch/bg-data.git/machinedata',bgroute)
-app.use('https://github.com/ttpunch/bg-data.git/submit-form',formroute)
-app.use('https://github.com/ttpunch/bg-data.git/machineroute',searchroute)
-app.use('https://github.com/ttpunch/bg-data.git/editdata/',editFormRoute)
+app.use('https://data-api-d6lk.onrender.com/machinedata',bgroute)
+app.use('https://data-api-d6lk.onrender.com/submit-form',formroute)
+app.use('https://data-api-d6lk.onrender.com/machineroute',searchroute)
+app.use('https://data-api-d6lk.onrender.com/editdata/',editFormRoute)
 //________________________________________________________________________________________________________________________________
 
 const dbconnect = async () => {
