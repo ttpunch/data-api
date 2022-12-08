@@ -9,7 +9,7 @@ router.post("/", async (req, res) => {
     breakdown: req.body.bgdetail,
     bgdate: req.body.bgdate,
   })
-  res.redirect('/recorddata')
+  res.redirect('/')
 
 });
 
