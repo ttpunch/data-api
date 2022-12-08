@@ -21,12 +21,11 @@ app.use(function(req, res, next) {
   res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
   next();
 });
-// app.use(
-//   cors({
-//   origin:"http://localhost:3000",
-//   methods:["GET","POST","PUT","DELETE"]
-// })
-// )
+app.use(
+  cors({
+    methods:["GET","POST","PUT","DELETE"]
+})
+)
 
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
