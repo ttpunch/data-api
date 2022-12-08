@@ -15,12 +15,18 @@ const bgroute=require('./Router/Bgroute')
 const editFormRoute=require('./Router/editFormRoute')
 
 
-app.use(
-  cors({
-  origin:"https://data-api-d6lk.onrender.com",
-  methods:["GET","POST","PUT","DELETE"]
-})
-)
+// Add Access Control Allow Origin headers
+app.use(function(req, res, next) {
+  res.header("Access-Control-Allow-Origin", "http://localhost:3000"); // update to match the domain you will make the request from
+  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+  next();
+});
+// app.use(
+//   cors({
+//   origin:"http://localhost:3000",
+//   methods:["GET","POST","PUT","DELETE"]
+// })
+// )
 
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
