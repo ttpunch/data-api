@@ -7,7 +7,7 @@ const EditformController = async (req, res) => {
     breakdown: req.body.breakdown,
   });
 
- res.send("Data Entered")
+ res.redirect('/recorddata')
 };
 
 module.exports = EditformController;
