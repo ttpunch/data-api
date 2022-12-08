@@ -5,6 +5,8 @@ const express = require("express");
 const app = express();
 const dotenv=require('dotenv')
 
+const cors=require('cors')
+
 dotenv.config();
 
 const formroute=require('./Router/FormRouter')
@@ -13,6 +15,9 @@ const bgroute=require('./Router/Bgroute')
 const editFormRoute=require('./Router/editFormRoute')
 
 
+app.use({
+  origin:"https://data-api-d6lk.onrender.com/"
+})
 
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
