@@ -17,7 +17,7 @@ const editFormRoute=require('./Router/editFormRoute')
 
 app.use(
   cors({
-  origin:"https://data-api-d6lk.onrender.com/",
+  origin:"https://data-api-d6lk.onrender.com",
   methods:["GET","POST","PUT","DELETE"]
 })
 )
