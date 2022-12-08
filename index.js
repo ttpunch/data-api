@@ -15,9 +15,12 @@ const bgroute=require('./Router/Bgroute')
 const editFormRoute=require('./Router/editFormRoute')
 
 
-app.use({
-  origin:"https://data-api-d6lk.onrender.com/"
+app.use(
+  cors({
+  origin:"https://data-api-d6lk.onrender.com/",
+  methods:["GET","POST","PUT","DELETE"]
 })
+)
 
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
