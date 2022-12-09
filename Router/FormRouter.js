@@ -2,14 +2,19 @@ var express = require("express");
 var router = express.Router();
 const machine = require("../models/machine.js");
 
-router.post("/", async (req, res) => {
+router.post("/",  (req, res) => {
   //  // Data entry
-  await machine.create({
+
+  const data=new machine({
     machine_no: req.body.mcdata,
     breakdown: req.body.bgdetail,
     bgdate: req.body.bgdate,
   })
-  machine.save();
+  
+   data.save(function(err, doc) {
+    if (err) return console.error(err);
+    console.log("Document inserted succussfully!");
+  });
 
 });
 
