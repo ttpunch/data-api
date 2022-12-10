@@ -10,13 +10,16 @@ router.post("/",  (req, res) => {
     breakdown: req.body.bgdetail,
     bgdate: req.body.bgdate,
   })
+  
+  data.save(function(err, doc) {
+    if (err) return console.error(err);
+    res.status(201);
+  });
+
+  
 
   console.log(req.body)
   
-   data.save(function(err, doc) {
-    if (err) return console.error(err);
-    console.log("Document inserted succussfully!");
-  });
 
 });
 
