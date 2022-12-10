@@ -10,6 +10,8 @@ router.post("/",  (req, res) => {
     breakdown: req.body.bgdetail,
     bgdate: req.body.bgdate,
   })
+
+  console.log(req.body)
   
    data.save(function(err, doc) {
     if (err) return console.error(err);
