@@ -33,7 +33,7 @@ app.use(bodyParser.json());
  
 //Submit form Data 
 app.use('/machinedata',bgroute)
-app.use('/',formroute)
+app.use('/submit-form',formroute)
 app.use('/machineroute',searchroute)
 app.use('/editdata/',editFormRoute)
 //________________________________________________________________________________________________________________________________
