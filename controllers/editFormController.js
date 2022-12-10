@@ -7,7 +7,7 @@ const EditformController = async (req, res) => {
     breakdown: req.body.breakdown,
   });
 
- res.json('/recorddata')
+ res.status(201)
 };
 
 module.exports = EditformController;
