@@ -3,11 +3,13 @@ const machine = require("../models/machine.js");
 const EditformController = async (req, res) => {
   const { id } = req.params;
 
-  await machine.findByIdAndUpdate(id, {
-    breakdown: req.body.breakdown,
-  });
-
- res.status(201)
+   try {
+        await machine.findByIdAndUpdate(id, {
+        breakdown: req.body.breakdown,
+       });res.status(201).send(data);
+      } catch (e) {
+        res.status(400).send(e.message);
+      }
  
 };
 
