@@ -10,9 +10,9 @@ const EditformController = async (req, res) => {
     {
       new: true
     });
-    res.status(201).send(data);
+    res.status(201).send(data)
   } catch (e) {
-    res.status(400).send(e.message);
+    res.status(400).send(e.message)
   }
 };
 
