@@ -35,7 +35,7 @@ app.use(bodyParser.json());
 app.use('/machinedata',bgroute)
 app.use('/submit-form',formroute)
 app.use('/machineroute',searchroute)
-app.use('/editdata/',editFormRoute)
+app.use('/editdata',editFormRoute)
 //________________________________________________________________________________________________________________________________
 
 const dbconnect = async () => {
