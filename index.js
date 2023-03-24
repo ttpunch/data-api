@@ -13,6 +13,7 @@ const formroute=require('./Router/FormRouter')
 const searchroute=require('./Router/SearchRouter')
 const bgroute=require('./Router/Bgroute')
 const editFormRoute=require('./Router/editFormRoute')
+const LoginRoute=require('./Router/LoginRouter')
 
 
 // Add Access Control Allow Origin headers
@@ -36,6 +37,7 @@ app.use('/machinedata',bgroute)
 app.use('/submit-form',formroute)
 app.use('/machineroute',searchroute)
 app.use('/editdata',editFormRoute)
+app.use('/login',LoginRoute)
 //________________________________________________________________________________________________________________________________
 
 const dbconnect = async () => {
