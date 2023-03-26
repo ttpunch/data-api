@@ -11,7 +11,7 @@ const EditformController = async (req, res) => {
     {
       new: true
     });
-    res.status(201).send.json(data)
+    res.status(201).json(data)
   } catch (e) {
     res.status(400).send(e.message)
   }
