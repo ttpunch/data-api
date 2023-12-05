@@ -2,7 +2,7 @@ const machine = require("../models/machine.js");
 
 const searchController = async (req, res) => {
   const { search } = req.query; // Retrieve the search term from query parameters
-  console.log(search);
+  
 
   let query = {}; // Initialize an empty query object
 
