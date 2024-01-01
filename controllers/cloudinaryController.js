@@ -13,7 +13,7 @@ const cloudinaryController= async (req, res) => {
     // Your registration logic here using imageUrl and coverImageUrl
 
     // Assuming registration is successful, send a response
-    return res.status(200).json({ message: 'Image uploaded Scuccesfully',link:`${imageUrl.url}` });
+    return res.status(200).json({ message: 'Image uploaded Succesfully',link:`${imageUrl.url}` });
   } catch (err) {
     res.status(500).json({ message: 'Something went wrong' });
   }
