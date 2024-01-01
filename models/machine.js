@@ -7,6 +7,7 @@ const machineSchema = new Schema({
   machine_no: {type:String,require:true},
   breakdown: {type:String,require:true},
   bgdate:{type:Date,require:true},
+  image:{type:String,require:false}
   },
 )
 

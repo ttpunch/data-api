@@ -9,6 +9,7 @@ router.post("/", async (req, res) => {
     machine_no: req.body.mcdata,
     breakdown: req.body.bgdetail,
     bgdate: req.body.bgdate,
+    image:req.body.image
   });
 
   try {
