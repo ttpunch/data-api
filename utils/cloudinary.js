@@ -31,7 +31,7 @@ const uploadOnCloudinary = async (localFilePath) => {
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, "./public");
+    cb(null, "./upload");
   },
   filename: function (req, file, cb) {
     cb(null, file.originalname);
