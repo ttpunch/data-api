@@ -2,7 +2,7 @@ const machine = require("../models/machine.js");
 
 const BgdataController = async (req, res) => {
   try {
-    const data = await machine.find({});
+    const data = await machine.find({}).sort({createdAt:-1});
     res.json(data);
     } catch (error) {
     console.error("Error fetching data:", error);
