@@ -8,7 +8,9 @@ const machineSchema = new Schema({
   breakdown: {type:String,require:true},
   bgdate:{type:Date,require:true},
   image:{type:String,require:false}
-  },
+  },{
+    timestamps:true
+  }
 )
 
 const machine=mongoose.model("bgdata",machineSchema)
