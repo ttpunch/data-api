@@ -3,45 +3,55 @@ const bodyParser = require("body-parser");
 const machine = require("./models/machine.js");
 const express = require("express");
 const app = express();
-const dotenv=require('dotenv')
+const dotenv = require('dotenv')
 
-const cors=require('cors')
+const cors = require('cors')
 
 dotenv.config();
 
-const formroute=require('./Router/FormRouter')
-const searchroute=require('./Router/SearchRouter')
-const bgroute=require('./Router/Bgroute')
-const editFormRoute=require('./Router/editFormRoute')
-const LoginRoute=require('./Router/LoginRouter')
-const SearchRoute=require('./Router/searchDataRouter.js')
-const imageuploader=require('./Router/imageUploadRoute.js')
+const formroute = require('./Router/FormRouter')
+const searchroute = require('./Router/SearchRouter')
+const bgroute = require('./Router/Bgroute')
+const editFormRoute = require('./Router/editFormRoute')
+const LoginRoute = require('./Router/LoginRouter')
+const SearchRoute = require('./Router/searchDataRouter.js')
+const imageuploader = require('./Router/imageUploadRoute.js')
 
 
 // Add Access Control Allow Origin headers
-app.use(function(req, res, next) {
+app.use(function (req, res, next) {
   res.header("Access-Control-Allow-Origin", "*"); // update to match the domain you will make the request from
   res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
   next();
 });
 app.use(
   cors({
-    methods:["GET","POST","PUT","DELETE"]
-})
+    methods: ["GET", "POST", "PUT", "DELETE"]
+  })
 )
 
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
- 
+
 //Submit form Data 
-app.use('/machinedata',bgroute)
-app.use('/submit-form',formroute)
-app.use('/machineroute',searchroute)
-app.use('/editdata',editFormRoute)
-app.use('/login',LoginRoute)
-app.use('/search',SearchRoute)
-app.use('/image',imageuploader)
+app.use('/machinedata', bgroute)
+app.use('/submit-form', formroute)
+app.use('/machineroute', searchroute)
+app.use('/editdata', editFormRoute)
+app.use('/login', LoginRoute)
+app.use('/search', SearchRoute)
+app.use('/image', imageuploader)
+
+// Serve Frontend Static Files
+const path = require('path');
+app.use(express.static(path.join(__dirname, '../frontend/build')));
+
+// Handle SPA Fallback
+app.get('*', (req, res) => {
+  res.sendFile(path.resolve(__dirname, '../frontend/build', 'index.html'));
+});
+
 //________________________________________________________________________________________________________________________________
 
 const dbconnect = async () => {
