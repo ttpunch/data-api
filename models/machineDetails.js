@@ -10,7 +10,8 @@ const machineDetailsSchema = new Schema({
     specifications: [
         {
             key: { type: String, required: true },
-            value: { type: String, required: true }
+            value: { type: String },
+            image: { type: String }
         }
     ]
 }, {
