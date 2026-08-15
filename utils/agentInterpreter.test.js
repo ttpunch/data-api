@@ -132,4 +132,60 @@ describe("normalizeInterpretation", () => {
     });
     expect(out.clarifyQuestion).toBe("Which machine is this about?");
   });
+
+  it("keeps a nested clarifyQuestion when downgraded for low confidence", () => {
+    const out = normalizeInterpretation({
+      intent: "breakdown",
+      confidence: 0.3,
+      data: { clarifyQuestion: "Which machine is this about?", mcdata: "251" },
+    });
+    expect(out.intent).toBe("clarify");
+    expect(out.clarifyQuestion).toBe("Which machine is this about?");
+  });
+
+  it("downgrades a NaN confidence on a breakdown to clarify", () => {
+    const out = normalizeInterpretation({
+      intent: "breakdown",
+      confidence: NaN,
+      fields: { mcdata: "251", bgdetail: "something" },
+    });
+    expect(out.intent).toBe("clarify");
+  });
+
+  it("downgrades an Infinity confidence on a breakdown to clarify", () => {
+    const out = normalizeInterpretation({
+      intent: "breakdown",
+      confidence: Infinity,
+      fields: { mcdata: "251", bgdetail: "something" },
+    });
+    expect(out.intent).toBe("clarify");
+  });
+
+  it("falls through to data when fields is present but empty", () => {
+    const out = normalizeInterpretation({
+      intent: "machine_details",
+      confidence: 0.9,
+      fields: {},
+      data: { machine_no: "251" },
+    });
+    expect(out.fields.machine_no).toBe("251");
+  });
+
+  it("coerces a numeric mcdata scalar to a string", () => {
+    const out = normalizeInterpretation({
+      intent: "breakdown",
+      confidence: 0.9,
+      fields: { mcdata: 251, bgdetail: "spindle motor failure" },
+    });
+    expect(out.fields.mcdata).toBe("251");
+  });
+
+  it("still returns an empty string for a non-scalar mcdata value", () => {
+    const out = normalizeInterpretation({
+      intent: "breakdown",
+      confidence: 0.9,
+      fields: { mcdata: {}, bgdetail: "spindle motor failure" },
+    });
+    expect(out.fields.mcdata).toBe("");
+  });
 });

@@ -39,7 +39,11 @@ const RESPONSE_SCHEMA = {
   required: ["intent", "confidence"],
 };
 
-const str = (v) => (typeof v === "string" ? v.trim() : "");
+const str = (v) => {
+  if (typeof v === "string") return v.trim();
+  if (typeof v === "number" && Number.isFinite(v)) return String(v);
+  return "";
+};
 
 const pickFields = (intent, fields) => {
   if (intent === "breakdown") {
@@ -70,7 +74,9 @@ const clarify = (question) => ({
 });
 
 const container = (raw) => {
-  const source = [raw.fields, raw.data].find((c) => c && typeof c === "object");
+  const source = [raw.fields, raw.data].find(
+    (c) => c && typeof c === "object" && Object.keys(c).length > 0
+  );
   return source || {};
 };
 
@@ -80,7 +86,7 @@ const normalizeInterpretation = (raw) => {
   }
 
   const intent = INTENTS.includes(raw.intent) ? raw.intent : "unsupported";
-  const confidence = typeof raw.confidence === "number" ? raw.confidence : 0;
+  const confidence = Number.isFinite(raw.confidence) ? raw.confidence : 0;
 
   if (intent === "clarify") return clarify(raw.clarifyQuestion || container(raw).clarifyQuestion);
 
@@ -88,7 +94,7 @@ const normalizeInterpretation = (raw) => {
     return { intent, confidence, fields: {}, missing: [], clarifyQuestion: "" };
   }
 
-  if (confidence < CONFIDENCE_FLOOR) return clarify(raw.clarifyQuestion);
+  if (confidence < CONFIDENCE_FLOOR) return clarify(raw.clarifyQuestion || container(raw).clarifyQuestion);
 
   const fields = pickFields(intent, container(raw));
   const missing = REQUIRED[intent].filter((name) => !fields[name]);
