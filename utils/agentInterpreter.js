@@ -113,4 +113,4 @@ const normalizeInterpretation = (raw) => {
   return { intent, confidence, fields, missing, clarifyQuestion: "" };
 };
 
-module.exports = { normalizeInterpretation, CONFIDENCE_FLOOR, RESPONSE_SCHEMA, DEFAULT_CLARIFY };
+module.exports = { normalizeInterpretation, CONFIDENCE_FLOOR, RESPONSE_SCHEMA, DEFAULT_CLARIFY, isoDate };
