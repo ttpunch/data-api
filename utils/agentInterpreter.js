@@ -69,6 +69,11 @@ const clarify = (question) => ({
   clarifyQuestion: str(question) || DEFAULT_CLARIFY,
 });
 
+const container = (raw) => {
+  const source = [raw.fields, raw.data].find((c) => c && typeof c === "object");
+  return source || {};
+};
+
 const normalizeInterpretation = (raw) => {
   if (!raw || typeof raw !== "object") {
     return { intent: "unsupported", confidence: 0, fields: {}, missing: [], clarifyQuestion: "" };
@@ -77,7 +82,7 @@ const normalizeInterpretation = (raw) => {
   const intent = INTENTS.includes(raw.intent) ? raw.intent : "unsupported";
   const confidence = typeof raw.confidence === "number" ? raw.confidence : 0;
 
-  if (intent === "clarify") return clarify(raw.clarifyQuestion);
+  if (intent === "clarify") return clarify(raw.clarifyQuestion || container(raw).clarifyQuestion);
 
   if (intent === "unsupported") {
     return { intent, confidence, fields: {}, missing: [], clarifyQuestion: "" };
@@ -85,7 +90,7 @@ const normalizeInterpretation = (raw) => {
 
   if (confidence < CONFIDENCE_FLOOR) return clarify(raw.clarifyQuestion);
 
-  const fields = pickFields(intent, raw.fields && typeof raw.fields === "object" ? raw.fields : {});
+  const fields = pickFields(intent, container(raw));
   const missing = REQUIRED[intent].filter((name) => !fields[name]);
 
   return { intent, confidence, fields, missing, clarifyQuestion: "" };

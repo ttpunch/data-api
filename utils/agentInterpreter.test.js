@@ -103,4 +103,33 @@ describe("normalizeInterpretation", () => {
     });
     expect(out.intent).toBe("clarify");
   });
+
+  it("accepts values under a data key, as minimax-m3 sometimes returns", () => {
+    const out = normalizeInterpretation({
+      intent: "breakdown",
+      confidence: 0.9,
+      data: { mcdata: "251", bgdetail: "spindle motor failure", bgdate: "2026-08-15" },
+    });
+    expect(out.fields.mcdata).toBe("251");
+    expect(out.fields.bgdetail).toBe("spindle motor failure");
+  });
+
+  it("prefers fields over data when a model sends both", () => {
+    const out = normalizeInterpretation({
+      intent: "machine_details",
+      confidence: 0.9,
+      fields: { machine_no: "correct" },
+      data: { machine_no: "stale" },
+    });
+    expect(out.fields.machine_no).toBe("correct");
+  });
+
+  it("finds a clarify question nested inside data", () => {
+    const out = normalizeInterpretation({
+      intent: "clarify",
+      confidence: 0.85,
+      data: { clarifyQuestion: "Which machine is this about?" },
+    });
+    expect(out.clarifyQuestion).toBe("Which machine is this about?");
+  });
 });
