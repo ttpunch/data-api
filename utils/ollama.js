@@ -23,41 +23,66 @@ Set confidence between 0 and 1 for how sure you are of the intent. Never invent 
 
 Put every extracted value under the "fields" key, and put clarifyQuestion at the top level. Reply with raw JSON only — no markdown code fence.`;
 
+// Tag failures with a short, non-sensitive code so a deployed instance can be
+// diagnosed from the HTTP response alone, without needing host log access.
+// Codes never contain the key, the prompt, or the user's message.
+const tagged = (code, detail) => Object.assign(new Error(detail), { code });
+
 const callOllama = async (message) => {
   const apiKey = process.env.OLLAMA_API_KEY;
-  if (!apiKey) throw new Error("OLLAMA_API_KEY is not configured");
+  if (!apiKey) throw tagged("missing_api_key", "OLLAMA_API_KEY is not configured");
+
+  // Node <18 has no global fetch. Without this the failure surfaces as a bare
+  // ReferenceError, which is indistinguishable from a real upstream problem.
+  if (typeof fetch !== "function") {
+    throw tagged("runtime_no_fetch", `global fetch unavailable on Node ${process.version}`);
+  }
 
   const today = new Date().toISOString().slice(0, 10);
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), TIMEOUT_MS);
 
   try {
-    const response = await fetch(OLLAMA_URL, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: OLLAMA_MODEL,
-        stream: false,
-        format: RESPONSE_SCHEMA,
-        messages: [
-          { role: "system", content: systemPrompt(today) },
-          { role: "user", content: message },
-        ],
-      }),
-      signal: controller.signal,
-    });
+    let response;
+    try {
+      response = await fetch(OLLAMA_URL, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${apiKey}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model: OLLAMA_MODEL,
+          stream: false,
+          format: RESPONSE_SCHEMA,
+          messages: [
+            { role: "system", content: systemPrompt(today) },
+            { role: "user", content: message },
+          ],
+        }),
+        signal: controller.signal,
+      });
+    } catch (err) {
+      if (err.name === "AbortError") {
+        throw tagged("upstream_timeout", `no response within ${TIMEOUT_MS}ms`);
+      }
+      // DNS failure, blocked egress, TLS problem, connection refused.
+      throw tagged("upstream_unreachable", err.message);
+    }
 
     if (!response.ok) {
-      throw new Error(`Ollama returned ${response.status}`);
+      // 401/403 => bad key value. 404 => OLLAMA_MODEL name wrong.
+      throw tagged(`upstream_${response.status}`, `Ollama returned ${response.status} for model "${OLLAMA_MODEL}"`);
     }
 
     const body = await response.json();
     const content = body?.message?.content;
     if (typeof content !== "string") return null;
-    return JSON.parse(stripFence(content));
+    try {
+      return JSON.parse(stripFence(content));
+    } catch (err) {
+      throw tagged("bad_model_json", `model reply was not JSON: ${err.message}`);
+    }
   } finally {
     clearTimeout(timeout);
   }
