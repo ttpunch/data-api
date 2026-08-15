@@ -188,4 +188,28 @@ describe("normalizeInterpretation", () => {
     });
     expect(out.fields.mcdata).toBe("");
   });
+
+  it("passes through a valid ISO bgdate", () => {
+    const out = normalizeInterpretation({
+      intent: "breakdown",
+      confidence: 0.9,
+      fields: { mcdata: "251", bgdetail: "x", bgdate: "2026-08-15" },
+    });
+    expect(out.fields.bgdate).toBe("2026-08-15");
+  });
+
+  it.each([
+    ["08-15-2026", "US-style month-day-year"],
+    ["2026/08/15", "slash-separated"],
+    ["Aug 15 2026", "month-name format"],
+    ["today", "non-date word"],
+    ["2026-13-45", "out-of-range month and day"],
+  ])("rejects a bgdate of %j (%s) and stores null", (badDate) => {
+    const out = normalizeInterpretation({
+      intent: "breakdown",
+      confidence: 0.9,
+      fields: { mcdata: "251", bgdetail: "x", bgdate: badDate },
+    });
+    expect(out.fields.bgdate).toBe(null);
+  });
 });

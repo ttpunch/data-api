@@ -8,6 +8,10 @@ const agentController = async (req, res) => {
     return res.status(400).json({ message: "message is required" });
   }
 
+  if (message.length > 2000) {
+    return res.status(400).json({ message: "message is too long" });
+  }
+
   try {
     const raw = await callOllama(message);
     return res.status(200).json(normalizeInterpretation(raw));

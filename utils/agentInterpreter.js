@@ -2,6 +2,9 @@ const CONFIDENCE_FLOOR = 0.5;
 
 const INTENTS = ["breakdown", "machine_details", "clarify", "unsupported"];
 
+// Kept in sync by hand with the frontend's own copy of this policy in
+// bg-data/src/lib/agentClient.js (also named REQUIRED there). The two must
+// agree, but there is nothing enforcing that automatically.
 const REQUIRED = {
   breakdown: ["mcdata", "bgdetail"],
   machine_details: ["machine_no"],
@@ -45,12 +48,20 @@ const str = (v) => {
   return "";
 };
 
+// The model is trusted to emit YYYY-MM-DD from prompt wording alone, but it
+// provably ignores its JSON schema elsewhere too. The frontend renders this
+// as <Input type="date">, which silently blanks any non-ISO value with no
+// change event — so an unvalidated bad date reads to the user as "empty"
+// while Mongoose would still cast the raw string on save. Reject anything
+// that is not a real YYYY-MM-DD date rather than let it through as-is.
+const isoDate = (v) => (/^\d{4}-\d{2}-\d{2}$/.test(v) && !isNaN(Date.parse(v)) ? v : null);
+
 const pickFields = (intent, fields) => {
   if (intent === "breakdown") {
     return {
       mcdata: str(fields.mcdata),
       bgdetail: str(fields.bgdetail),
-      bgdate: str(fields.bgdate) || null,
+      bgdate: isoDate(str(fields.bgdate)),
     };
   }
   return {
