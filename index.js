@@ -17,6 +17,7 @@ const LoginRoute = require('./Router/LoginRouter')
 const SearchRoute = require('./Router/searchDataRouter.js')
 const imageuploader = require('./Router/imageUploadRoute.js')
 const machineDetailsRoute = require('./Router/MachineDetailsRouter.js')
+const agentRoute = require('./Router/AgentRouter.js')
 
 
 // Add Access Control Allow Origin headers
@@ -44,6 +45,7 @@ app.use('/api/login', LoginRoute)
 app.use('/api/search', SearchRoute)
 app.use('/api/image', imageuploader)
 app.use('/api/machine-details', machineDetailsRoute)
+app.use('/api/agent', agentRoute)
 
 // Serve Frontend Static Files
 const path = require('path');
