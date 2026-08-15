@@ -46,7 +46,14 @@ const chatWithTools = async (transcript) => {
       throw tagged(`upstream_${response.status}`, `Ollama returned ${response.status}`);
     }
 
-    const body = await response.json();
+    let body;
+    try {
+      body = await response.json();
+    } catch (err) {
+      // Mirrors utils/ollama.js: HTTP 200 with a non-JSON body (e.g. a proxy
+      // error page) must not collapse into the generic "unknown" reason.
+      throw tagged("bad_model_json", `model reply was not JSON: ${err.message}`);
+    }
     return body?.message ?? {};
   } finally {
     clearTimeout(timeout);
