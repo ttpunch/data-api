@@ -16,8 +16,17 @@ const agentController = async (req, res) => {
     const raw = await callOllama(message);
     return res.status(200).json(normalizeInterpretation(raw));
   } catch (error) {
-    console.error("Agent interpret failed:", error.message);
-    return res.status(502).json({ message: "Could not interpret the message" });
+    // Prefix is deliberately distinct from the frontend's console.error text,
+    // so a server-side log line can't be mistaken for the browser's.
+    console.error("[api/agent/interpret] failed:", error.code || "unknown", "-", error.message);
+    // reason is a fixed vocabulary of non-sensitive codes (missing_api_key,
+    // runtime_no_fetch, upstream_401, upstream_timeout, bad_model_json, ...).
+    // It carries no key, prompt, or user content, and makes a deployed
+    // instance diagnosable without host log access.
+    return res.status(502).json({
+      message: "Could not interpret the message",
+      reason: error.code || "unknown",
+    });
   }
 };
 
