@@ -66,6 +66,11 @@ const TOOL_DEFINITIONS = [
 
 const str = (v) => (typeof v === "string" ? v.trim() : "");
 
+// A record without a usable _id must never seed the provenance set: absent that
+// guard, `String(undefined)` collapses to the literal string "undefined" and a
+// proposal carrying id: "undefined" would then pass the check below.
+const idOf = (r) => (r && r._id !== undefined && r._id !== null ? String(r._id) : null);
+
 const runToolLoop = async ({ message, chat, findBreakdowns }) => {
   // Every _id this loop has actually shown to the model. A proposal referencing
   // anything outside this set is rejected — the invariant is enforced here, in
@@ -97,6 +102,11 @@ const runToolLoop = async ({ message, chat, findBreakdowns }) => {
       return { kind: "reply", text: str(reply?.content) };
     }
 
+    // Only the first tool_call in a reply is ever executed; the rest of the array
+    // is discarded. This is deliberate and load-bearing for id provenance: it is
+    // what stops a model from riding a write proposal in on the same turn as the
+    // find_breakdowns call that would legitimise it. Do not change this to
+    // iterate over `calls` without re-deriving the provenance guarantee.
     const call = calls[0];
     const name = call?.function?.name;
     const args = call?.function?.arguments ?? {};
@@ -106,7 +116,10 @@ const runToolLoop = async ({ message, chat, findBreakdowns }) => {
       if (!machineNo) return { kind: "error", reason: "missing_machine_no" };
 
       const records = (await findBreakdowns(machineNo)).slice(0, MAX_RECORDS);
-      records.forEach((r) => seenIds.set(String(r._id), r));
+      records.forEach((r) => {
+        const id = idOf(r);
+        if (id) seenIds.set(id, r);
+      });
       lastRecords = records;
       lastMachineNo = machineNo;
 
@@ -114,12 +127,14 @@ const runToolLoop = async ({ message, chat, findBreakdowns }) => {
       transcript.push({
         role: "tool",
         content: JSON.stringify(
-          records.map((r) => ({
-            id: String(r._id),
-            machine_no: r.machine_no,
-            breakdown: r.breakdown,
-            bgdate: r.bgdate,
-          }))
+          records
+            .filter((r) => idOf(r) !== null)
+            .map((r) => ({
+              id: idOf(r),
+              machine_no: r.machine_no,
+              breakdown: r.breakdown,
+              bgdate: r.bgdate,
+            }))
         ),
       });
       continue;

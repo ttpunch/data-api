@@ -130,6 +130,107 @@ describe("runToolLoop — id provenance (security critical)", () => {
   });
 });
 
+describe("runToolLoop — only the first tool_call in a reply is executed (regression guard)", () => {
+  it("does not let a proposal riding with its own legitimising lookup through in the same turn", async () => {
+    const out = await runToolLoop({
+      message: "look up 251 and delete the spindle one",
+      chat: scriptedChat([
+        {
+          tool_calls: [
+            { function: { name: "find_breakdowns", arguments: { machine_no: "251" } } },
+            { function: { name: "propose_delete_breakdown", arguments: { id: RECORD._id } } },
+          ],
+        },
+        // No further scripted reply: the loop calls chat() again after the lookup
+        // and gets the default { content: "done" }, which is what proves the
+        // second call in the array was never executed.
+      ]),
+      findBreakdowns: async () => [RECORD],
+    });
+    expect(out.kind).not.toBe("propose_delete");
+    // The lookup (calls[0]) did run and its records are what come back.
+    expect(out.kind).toBe("records");
+    expect(out.records).toEqual([RECORD]);
+  });
+
+  it("checks a proposal before any lookup later in the same array can legitimise it", async () => {
+    const out = await runToolLoop({
+      message: "delete it, also look up 251",
+      chat: scriptedChat([
+        {
+          tool_calls: [
+            { function: { name: "propose_delete_breakdown", arguments: { id: RECORD._id } } },
+            { function: { name: "find_breakdowns", arguments: { machine_no: "251" } } },
+          ],
+        },
+      ]),
+      findBreakdowns: async () => [RECORD],
+    });
+    expect(out).toEqual({ kind: "error", reason: "unknown_record_id" });
+  });
+});
+
+describe("runToolLoop — id type handling (regression guard)", () => {
+  const lookupThenPropose = (idArg) =>
+    runToolLoop({
+      message: "delete that one",
+      chat: scriptedChat([
+        { tool_calls: [{ function: { name: "find_breakdowns", arguments: { machine_no: "251" } } }] },
+        { tool_calls: [{ function: { name: "propose_delete_breakdown", arguments: { id: idArg } } }] },
+      ]),
+      findBreakdowns: async () => [RECORD],
+    });
+
+  it("rejects a numeric id even when it would coerce to a real id's text", async () => {
+    const out = await lookupThenPropose(12345);
+    expect(out).toEqual({ kind: "error", reason: "unknown_record_id" });
+  });
+
+  it("rejects a null id", async () => {
+    const out = await lookupThenPropose(null);
+    expect(out).toEqual({ kind: "error", reason: "unknown_record_id" });
+  });
+
+  it("rejects an array wrapping the real id", async () => {
+    const out = await lookupThenPropose([RECORD._id]);
+    expect(out).toEqual({ kind: "error", reason: "unknown_record_id" });
+  });
+
+  it("rejects an object whose toString would produce the real id", async () => {
+    const out = await lookupThenPropose({ toString: () => RECORD._id });
+    expect(out).toEqual({ kind: "error", reason: "unknown_record_id" });
+  });
+
+  it("rejects the real id in a different letter case", async () => {
+    const out = await lookupThenPropose(RECORD._id.toUpperCase());
+    expect(out).toEqual({ kind: "error", reason: "unknown_record_id" });
+  });
+
+  it("still accepts the real id with surrounding whitespace, because str() trims by design", async () => {
+    const out = await lookupThenPropose(`  ${RECORD._id}  `);
+    expect(out.kind).toBe("propose_delete");
+    expect(out.record).toEqual(RECORD);
+  });
+});
+
+describe("runToolLoop — records without a usable _id (regression guard)", () => {
+  it("does not let a record lacking _id seed a usable 'undefined' provenance key", async () => {
+    const out = await runToolLoop({
+      message: "delete that one",
+      chat: scriptedChat([
+        { tool_calls: [{ function: { name: "find_breakdowns", arguments: { machine_no: "251" } } }] },
+        {
+          tool_calls: [
+            { function: { name: "propose_delete_breakdown", arguments: { id: "undefined" } } },
+          ],
+        },
+      ]),
+      findBreakdowns: async () => [{ machine_no: "251", breakdown: "x" }],
+    });
+    expect(out).toEqual({ kind: "error", reason: "unknown_record_id" });
+  });
+});
+
 describe("runToolLoop — bounds and malformed input", () => {
   it("stops after MAX_ITERATIONS instead of looping forever", async () => {
     let calls = 0;
