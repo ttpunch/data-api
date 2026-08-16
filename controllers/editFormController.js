@@ -1,19 +1,20 @@
 const machine = require("../models/machine.js");
+const { buildUpdate } = require("./editHelpers.js");
 
 const EditformController = async (req, res) => {
   const { id } = req.params;
-  console.log("id :",id)
+  const update = buildUpdate(req.body);
+
+  if (Object.keys(update).length === 0) {
+    return res.status(400).json({ message: "No valid fields to update" });
+  }
 
   try {
-   const data= await machine.findByIdAndUpdate(id, {
-      breakdown: req.body.breakdown,
-    },
-    {
-      new: true
-    });
-    res.status(201).json(data)
+    const data = await machine.findByIdAndUpdate(id, update, { new: true });
+    if (!data) return res.status(404).json({ message: "Record not found" });
+    return res.status(201).json(data);
   } catch (e) {
-    res.status(400).send(e.message)
+    return res.status(400).json({ message: e.message });
   }
 };
 
